@@ -1,0 +1,10 @@
+{{ JOB_CARD }}
+//MYLIBS JCLLIB ORDER=({{ DFS_PROCLIB }},{{ DFS_JOBLIB }})
+//STARTCTL       EXEC PGM=ISFAFD
+//ISFOUT DD SYSOUT=*
+//ISFIN  DD *
+LOG
+{% for i in range(NUM_OF_MPPS) %}
+/{{ DFS_IMS_SSID }}STOP REGION JOBNAME {{ DFS_IMS_SSID }}MPP{{i}}
+{% endfor %}
+/*   

@@ -1,0 +1,143 @@
+---
+# tasks file for deprovision-ims-dbdc
+- name:  Deprovision IMS
+  block:
+
+    # * Need this because Ansible lazily interprets role_path
+    # * Results in wrong paths being sent when passing vars that use role_path var
+    - set_fact:
+        eager_role_path: '{{role_path}}'
+
+    - include_role:
+        name: send-templates
+      vars:
+        template_path: '{{ eager_role_path }}/templates/deprovision/*'
+
+    # - include_role: 
+    #     name: save-templates-to-datasets
+    #   vars:
+    #     datasets: '{{ desired_install_job_save_locations.deprovision }}'
+
+    - name: Stop MPP Regions
+      submit_jcl:
+        name: STOPMPP.j2
+        path: '{{ uss_file_path }}'
+        max_rc: 12
+      ignore_errors: yes
+
+    - name: Stop JMP Regions
+      submit_jcl:
+        name: STOPJMP.j2
+        path: '{{ uss_file_path }}'
+        max_rc: 12
+      ignore_errors: yes
+      
+    - block:
+        - set_fact:
+            ims_up: yes
+
+        - name: wait-for-ims-ready
+          include_role:
+            name: submit-rexx 
+            public: yes
+          vars:
+            rexx_name: 'WaitJob.j2'
+            max_rc: 0
+            
+      rescue:
+        - set_fact:
+            ims_up: no
+
+    - name: Stop all IMS resources
+      submit_jcl:
+        name: DFSSTPRS.j2
+        path: '{{ uss_file_path }}'
+        max_rc: 8
+      when: ims_up
+
+    - name: Immediate IMS Shutdown
+      submit_jcl:
+        name: DFSISHUT.j2
+        path: '{{ uss_file_path }}'
+        max_rc: 12
+      when: ims_up
+
+    - name: Stop ICON
+      submit_jcl:
+        name: DFSSTPIC.j2
+        path: '{{ uss_file_path }}'
+        reuse_script: yes
+        max_rc: 8
+      register: response
+
+
+    - name: Stop OM
+      submit_jcl:
+        name: DFSSTPOM.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+    - name: Stop RM
+      submit_jcl:
+        name: DFSSTPRM.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+    - name: Stop CSL
+      submit_jcl:
+        name: DFSSTPAS.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+    - name: Delete Sysdef libs
+      submit_jcl:
+        name: DFSSYSDL.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+    - name: Delete IMS Runtime Libs
+      submit_jcl:
+        name: DFSDELLB.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+    - name: Delete IMS Catalog
+      submit_jcl:
+        name: DFSDCTLG.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+    # - name: Unauth IMS Libs
+    #   submit_jcl:
+    #     name: ?.j2
+    #     path: '{{ uss_file_path }}'
+    #     script_path: '{{ response.script_path }}'
+
+
+    # - name: Delete IMS Services
+    #   submit_jcl:
+    #     name: ?.j2
+    #     path: '{{ uss_file_path }}'
+    #     script_path: '{{ response.script_path }}'
+
+
+    - name:  Delete IEFJOBS members
+      include_role:
+        name: submit-rexx 
+        public: yes
+      vars:
+        rexx_name: 'IEFJOBSX.j2'
+        max_rc: 0
+
+    - name: Clean proclib
+      submit_jcl:
+        name: DFSDLMBR.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+  always:
+    - name: Delete the temporary submit_jcl script path
+      file:
+          path: "{{ response.script_path }}"
+          state: absent
+      when: response

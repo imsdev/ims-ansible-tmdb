@@ -1,0 +1,184 @@
+TARGET_USERNAME: USRT001
+
+# Where to install MVSUTILS/MVSCMD and other needed tools/scripts
+uss_utilities_path: /u/{{ TARGET_USERNAME }}
+
+# path leading to binaries that may be needed example: /hsstools/bin
+TOOLS_PATH: /hsstools/bin
+
+# Where generated JCL files should be saved on target
+uss_file_path: /u/{{ TARGET_USERNAME }}
+
+# Port information to be used for IMS Connect
+DFS_PORTID: 9978
+DFS_SSLPORTID: 9979
+DFS_REGION_TCPIPPORT: 9977
+DFS_REGION_SSLTCPIPPORT: 9966
+
+DFS_IMS_USERID: '{{ TARGET_USERNAME | upper }}'
+
+# IMS instance name to use, ensure it is unique
+DFS_IMS_SSID: IMS1
+
+DFS_AUTH_LIB_HLQ1: IMSBANK
+DFS_AUTH_LIB_HLQ2: '{{ DFS_IMS_SSID }}' 
+
+DFS_AUTH_LIB_SYSHLQ1: DFS   
+DFS_AUTH_LIB_SYSHLQ2: V15R1M0
+
+DFS_JOBLIB: '{{ DFS_AUTH_LIB_HLQ1 }}.{{ DFS_AUTH_LIB_HLQ2 }}.JOBS'
+
+DFS_RESLIB: '{{ DFS_AUTH_LIB_HLQ1 }}.{{ DFS_AUTH_LIB_HLQ2 }}.SDFSRESL'
+
+DFS_PROCLIB: '{{ DFS_AUTH_LIB_HLQ1 }}.{{ DFS_AUTH_LIB_HLQ2 }}.PROCLIB'
+
+DFS_INIT_JAVA_CONF: yes
+JAVA_CONF_PATH: /u/dfsjvmpr.props
+DFS_workingdir: /u/{{ TARGET_USERNAME }}
+
+DFS_SMS_ENVIRONMENT: true
+DFS_SMS_CLASS: CLASS2
+DFS_SMS_MCLASS: NONE
+
+DFS_DS_VOLUME1: W68001
+DFS_DS_VOLUME2: W68002
+
+DFS_IMSPlex: PLEX2
+
+zCloud_LERuntime: CEE.SCEERUN
+
+zCloud_MACLIB: SYS1.MACLIB
+
+zCloud_CSSLIB: SYS1.CSSLIB
+
+DFS_IMS_UNIT: SYSALLDA
+DFS_IMS_UNIT2: 3390
+DFS_PORTIDSuf: 99
+DFS_IMSXCFGroup: IMSXCFGN
+
+
+DFS_IMS_CRC: '@'
+DFS_IMS_LINEGRP: SPOOL
+
+DFS_useRRS: 'N' 
+
+IST_VTAM_IMSAPPLID: '{{ DFS_IMS_SSID }}'
+
+zCloud_PROCLIB: USER.PROCLIB
+zCloud_MODGEN: SYS1.MODGEN
+
+
+DFS_useIEFJOBS: 'N'
+zCloud_IEFJOBS: SYS1.IEFJOBS
+DFS_IXUSTIM1: 300
+
+DXR_IRLM_SSID: XRLM
+DXR_IRLM_Procedure: IRLM23D
+
+CSQ_SSID: CSQ1
+
+## SVC Values
+zCloud_IMS_SVC_Type2: '229'
+zCloud_IMS_SVC_Type4: '249'
+
+# the library to send the output of DFSPROCB
+ADDTL_SAMP_PROC_LIB: '{{ DFS_AUTH_LIB_HLQ1 }}.{{ DFS_AUTH_LIB_HLQ2 }}.PROCLIB'
+
+# any jobs/procs created that should be saved for later use and/or reference 
+# this should not need to be modified
+desired_install_job_save_locations:
+  provision:
+    - file_name: DFSE302J
+      ds_member: IV3E302J
+      hlq: INSTALL
+    - file_name: DFSALSY1
+      ds_member: IV3E101J
+      hlq: INSTALL
+    - file_name: DFSALCAT
+      ds_member: IV3E319J
+      hlq: INSTALL
+    - file_name: DFSALSY2
+      ds_member: IV3C101J
+      hlq: INSTALL
+    - file_name: DFSSETPG
+      ds_member: IV3D201T
+      hlq: INSTALL
+    - file_name: DFS4CPYP
+      ds_member: IV3E312J
+      hlq: INSTALL
+    - file_name: DFSE313J
+      ds_member: IV3E313J
+      hlq: INSTALL
+    - file_name: DFSCPYST
+      ds_member: IV3E318J
+      hlq: INSTALL
+    - file_name: DFS4ICON
+      ds_member: '{{ DFS_IMS_SSID }}HWS1'
+      hlq: JOBS
+    - file_name: DFSE304J
+      ds_member: IV3E304J
+      hlq: INSTALL
+    - file_name: DFSE303J
+      ds_member: IV3E303J
+      hlq: INSTALL
+    - file_name: DFSDYNAL
+      ds_member: IV3E301J
+      hlq: INSTALL
+    - file_name: DFSENOLC
+      ds_member: IV3E317J
+      hlq: INSTALL
+    - file_name: DFS4ACTV
+      ds_member: IV3E318J
+      hlq: INSTALL
+    - file_name: DFSE305J
+      ds_member: IV3E305J
+      hlq: INSTALL
+    - file_name: DFSGNPRE
+      ds_member: IV3C202J
+      hlq: INSTALL
+    - file_name: DFSLDCAT
+      ds_member: IV3E319K
+      hlq: INSTALL
+    - file_name: DFS4SE3
+      ds_member: IV3E203J
+      hlq: INSTALL
+    - file_name: DFSAPPGN
+      ds_member: IV3E201J
+      hlq: INSTALL
+    - file_name: DFS4APPG
+      ds_member: IV3E203J
+      hlq: INSTALL
+    - file_name: DFSE315J
+      ds_member: IV3E315J
+      hlq: INSTALL
+    - file_name: DFSE314J
+      ds_member: IV3E314J
+      hlq: INSTALL
+    - file_name: DFSC105J
+      ds_member: IV3C105J
+      hlq: INSTALL
+    - file_name: DFS4STG1
+      ds_member: IV3C203J
+      hlq: INSTALL
+    - file_name: DFSDFDRC
+      ds_member: IV3E207J
+      hlq: INSTALL
+    - file_name: STARTCTL
+      ds_member: STARTCTL
+      hlq: JOBS
+    - file_name: STARTOM
+      ds_member: STARTOM
+      hlq: JOBS
+    - file_name: STARTRM
+      ds_member: STARTRM
+      hlq: JOBS
+    - file_name: STARTSCI
+      ds_member: STARTSCI
+      hlq: JOBS
+    - file_name: DFS4DSVC
+      ds_member: IV3D209T
+      hlq: INSTALL
+  deprovision:
+    - file_name: DFSUNMNT
+      ds_member: UNMOUNT
+      hlq: INSTALL

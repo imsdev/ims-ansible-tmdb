@@ -1,0 +1,346 @@
+---
+# tasks file for provision-ims-dbdc
+- name: Provision IMS
+  block:
+
+    # * Need this because Ansible lazily interprets role_path
+    # * Results in wrong paths being sent when passing vars that use role_path var
+    - set_fact:
+        eager_role_path: '{{role_path}}'
+
+    - name: Reserve ports for ICON
+      block:
+        - name: Reserve ICON HTTP Port
+          zport:
+            name: '*'
+            dsname: '{{ TCPIP_PROFILE }}'
+            tmp_dsname: '{{ TCPIP_PROFILE_TMP }}'
+            tcp: yes
+          register: port_alloc_result1
+
+        - name: Reserve ICON SSL Port
+          zport:
+            name: '*'
+            dsname: '{{ TCPIP_PROFILE }}'
+            tmp_dsname: '{{ TCPIP_PROFILE_TMP }}'
+            tcp: yes
+          register: port_alloc_result2
+
+        - set_stats:
+            data:
+              DFS_REGION_TCPIPPORT: '{{ port_alloc_result1.port }}' 
+              DFS_REGION_SSLTCPIPPORT: '{{ port_alloc_result2.port }}' 
+      when: dynamic_port_reservation
+
+    - include_role: 
+        name: send-templates
+      vars:
+        template_path: '{{ eager_role_path }}/templates/provision/*'
+
+    - name: Allocate work dataset zCloud IMS
+      submit_jcl:
+          name: DFSALWRK.j2 
+          path: '{{ uss_file_path }}'
+          reuse_script: yes
+      register: response
+
+    - name: Allocate IMS system definition data sets
+      submit_jcl:
+          name: DFSALSY2.j2 
+          path: '{{ uss_file_path }}'
+          script_path: '{{ response.script_path }}'
+
+    - name: Allocate all IMS data sets
+      submit_jcl:
+          name: DFSALSY1.j2 
+          path: '{{ uss_file_path }}'
+          script_path: '{{ response.script_path }}'
+
+    - name: Copy PROCLIB members
+      block:
+        - name: Create temporary directory to store PROCLIB members
+          tempfile:
+            state: directory
+          register: proclib_tmp_dir
+
+        - name: Send PROCLIB member templates to USS directory
+          include_role:
+            name: send-templates
+          vars:
+            template_path: '{{eager_role_path}}/templates/procs/*'
+            uss_file_path: '{{ proclib_tmp_dir.path }}'
+
+        - name: Remove extensions from filenames
+          shell: > 
+            for procname in $(ls *.j2); do
+            basename="$(echo ${procname} | cut -d'.' -f1)";
+            cp ${procname} "//'{{ DFS_AUTH_LIB_HLQ1 }}.{{ DFS_AUTH_LIB_HLQ2 }}.PROCLIB(${basename})'" ;
+            done
+          args:
+            chdir: '{{ proclib_tmp_dir.path }}'
+      always:
+        - name: Delete the temporary PROCLIB files directory
+          file:
+            path: '{{ proclib_tmp_dir.path }}'
+            state: absent 
+
+    - include_role: 
+        name: save-templates-to-datasets
+      vars:
+        datasets: '{{ desired_install_job_save_locations.provision }}'
+
+    - name: Create additional sample procedures
+      submit_jcl:
+        name: DFSPROCB.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+    - name: IMS system definition preprocessor utility
+      submit_jcl:
+        name: DFSGNPRE.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+    - name: Sysdef stage 1
+      submit_jcl:
+        name: DFS4STG1.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+        max_rc: 2
+
+    - name: Sysdef stage 2
+      submit_jcl:
+        name: DFS4STG2.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+        max_rc: 2
+
+    - name: RACF security exits for IMS
+      submit_jcl:
+        name: DFSC105J.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+
+    - name: Auth IMS datasets to z/OS
+      submit_jcl:
+        name: DFSSETPG.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+    # - name: Define IMS Services to z/OS
+    #   submit_jcl:
+    #     name: DFS4DSVC.j2
+    #     path: '{{ uss_file_path }}'
+    #     script_path: '{{ response.script_path }}'         
+
+    - name: Dynamically allocate IMS system datasets
+      submit_jcl:
+        name: DFSDYNAL.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+    - name: Allocate IMS catalog DB
+      submit_jcl:
+        name: DFSALCAT.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+
+    - name: Prep IMS DBRC
+      submit_jcl:
+        name: DFSE314J.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+
+    - name: Add IMS procs
+      submit_jcl:
+        name: DFSE302J.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+    - name: Define IMS subcomponents
+      submit_jcl:
+        name: DFSE303J.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+
+    - name: Define IMS subcomponent CQS
+      submit_jcl:
+        name: DFSE304J.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+    # - name: ims-config-defaults
+    #   submit_jcl:
+    #     name: DFSE305J.j2
+    #     path: '{{ uss_file_path }}'
+    #     script_path: '{{ response.script_path }}'
+
+    - name: Copy procs in IMS PROCLIB
+      submit_jcl:
+        name: DFS4CPYP.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+     
+    - block:
+        # comment out the next 2 tasks if including a userdefined imsjava.tar which contains all of the IMS Universal Driver packages.
+        # - name: Copy imsjava to target
+        #   copy:
+        #     src: '{{ role_path }}/files/java/imsjava.tar'
+        #     dest: '/u/{{ TARGET_USERNAME }}/imsjava.tar'
+
+        #     # dest: '{{ uss_file_path }}/imsjava.tar'
+
+        # - name: Unarchive templates on target
+        #   shell: 'tar -Co . -xf imsjava.tar ; rm imsjava.tar'
+        #   args:
+        #     chdir: /u/{{ TARGET_USERNAME }}
+
+        # - name: Create unique tempfile used for dfsjvmpr.props
+        #   tempfile:   
+        #     state: file
+        #   register: dfsjvmpr_tmp
+        # - set_fact:
+        #     JAVA_CONF_PATH: '{{ dfsjvmpr_tmp.path }}' 
+
+        - name: Create dfsjvmpr.props for potential JMP regions 
+          shell: echo {{ lookup('template', role_path + '/templates/configs/dfsjvmpr.j2') }} > /u/{{ TARGET_USERNAME }}/dfsjvmpr.props #{{ JAVA_CONF_PATH }}
+      when: DFS_INIT_JAVA_CONF
+
+    - name: Create IEFJOBS members
+      include_role:
+        name: submit-rexx 
+        public: yes
+      vars:
+        rexx_name: 'IEFJOBS.j2'
+        max_rc: 0
+
+    - name: Copy procs to jobs dataset
+      submit_jcl:
+        name: DFSE313J.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+    - name: Copy staging libs
+      submit_jcl:
+        name: DFSCPYST.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+    - name: Prep exits for IMS security and conn
+      submit_jcl:
+        name: DFSE315J.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+
+    - name: Prep ACBLIB step 1
+      submit_jcl:
+        name: DFSAPPGN.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+
+    - name: Prep ACBLIB step 2
+      submit_jcl:
+        name: DFS4APPG.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+
+    - name: Prep ACBLIB step 3
+      submit_jcl:
+        name: DFS4SE3.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+
+    - name: Enable IMS OLC
+      submit_jcl:
+        name: DFSENOLC.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+    - name: Establish active libs
+      submit_jcl:
+        name: DFS4ACTV.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+    - name: Specify DBRC defaults
+      submit_jcl:
+        name: DFSDFDRC.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+    - name: Load IMS catalog
+      submit_jcl:
+        name: DFSLDCAT.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+
+    - name: Send start region rexx script
+      copy:
+        src: '{{ role_path }}/files/scripts/start-region.rexx'
+        dest: '{{ uss_utilities_path }}/start-region.rexx'
+
+    - shell: chtag -t -c ISO8859-1 start-region.rexx
+      args:  
+        chdir: '{{ uss_utilities_path }}'
+
+    - file: 
+        path: '{{ uss_utilities_path }}/start-region.rexx'
+        state: file
+        mode: a+x
+
+    - name: Start SCI 
+      shell: '{{ uss_utilities_path }}/start-region.rexx STARTSCI.j2 {{ DFS_IMS_SSID }}SCI'
+      args:
+        chdir: '{{ uss_file_path }}'
+
+    - name: Start OM 
+      shell: '{{ uss_utilities_path }}/start-region.rexx STARTOM.j2 {{ DFS_IMS_SSID }}OM'
+      args:
+        chdir: '{{ uss_file_path }}'
+
+    - name: Start RM 
+      shell: '{{ uss_utilities_path }}/start-region.rexx STARTRM.j2 {{ DFS_IMS_SSID }}RM'
+      args:
+        chdir: '{{ uss_file_path }}'
+
+    - name: Start IMS control region 
+      shell: '{{ uss_utilities_path }}/start-region.rexx STARTCTL.j2 {{ DFS_IMS_SSID }}CTL'
+      args:
+        chdir: '{{ uss_file_path }}'
+
+    - name: Wait for IMS ready
+      include_role:
+        name: submit-rexx 
+        public: yes
+      vars:
+        rexx_name: 'WaitJob.j2'
+        max_rc: 0
+
+    - name: IMS cold start
+      submit_jcl:
+        name: CLDSTART.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+    - name: ICON start
+      submit_jcl:
+        name: ICONSTRT.j2
+        path: '{{ uss_file_path }}'
+        script_path: '{{ response.script_path }}'
+
+  always:
+    - name: Delete the temporary submit_jcl script path
+      file:
+          path: "{{ response.script_path }}"
+          state: absent
+      when: response

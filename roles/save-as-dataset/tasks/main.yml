@@ -1,0 +1,8 @@
+---
+# tasks file for save-as-dataset
+- name: Save generated JCL as a dataset
+  shell: cp "{{ file_name }}" "//'{{ dataset_pds }}({{ dataset_member }})'" 
+  args:
+    chdir: "{{ uss_utilities_path }}"
+  become: yes
+  become_user: omvsadm

@@ -1,0 +1,101 @@
+TOOLS_ROOT: /hsstools
+
+# path leading to binaries that may be needed example: /hsstools/bin
+TOOLS_PATH: '{{TOOLS_ROOT}}/bin'
+
+system_environment:
+  INSTALL_PYTHON: /var/python27
+  RELEASE_NAME: python-2017-04-12
+  RELEASE_TYPE: py27
+  RELEASE_DIR: /var/python27/python-2017-04-12-py27
+  PKGS_BASE: /var/python27/python-2017-04-12-py27/pkgs
+  PYTHON_ENV: python27
+  PYTHON_HOME: /var/python27/python-2017-04-12-py27/python27
+  PYTHON: /var/python27/python-2017-04-12-py27/python27/bin
+  LIBPATH: /var/python27/python-2017-04-12-py27/python27/lib:${LIBPATH}
+  FFI_LIB: /var/python27/python-2017-04-12-py27/python27/lib/ffi
+  TERMINFO: /var/python27/python-2017-04-12-py27/python27/share/terminfo
+  PKG_CONFIG_PATH: /var/python27/python-2017-04-12-py27/python27/share/pkgconfig:/var/python27/python-2017-04-12-py27/python27/lib/pkgconfig
+  CURL_CA_BUNDLE: /var/python27/python-2017-04-12-py27/python27/etc/ssl/cacert.pem
+  _: /hsstools/bin/env 
+  _BPXK_AUTOCVT: ON
+  _CEE_RUNOPTS: 'FILETAG(AUTOCVT,AUTOTAG) POSIX(ON)'
+  _TAG_REDIR_ERR: txt
+  _TAG_REDIR_IN: txt
+  _TAG_REDIR_OUT: txt
+  TOOLS_ROOT: /hsstools
+
+
+vars_folder_name: vars_native
+
+
+# The username that will be used to establish SSH connection to target
+TARGET_USERNAME: OMVSADM
+
+# Config members shared across multiple playbooks 
+
+# The job card to be use for any batch jobs run
+# Ensure that the job logs will be accessible with provided configuration
+JOB_CARD: |- 
+  //ANSIBLE JOB 'testing',
+  //  NOTIFY={{ TARGET_USERNAME | upper }},
+  //  USER={{ TARGET_USERNAME | upper }},
+  //  MSGCLASS=E,
+  //  MSGLEVEL=(1,1),
+  //  CLASS=A
+
+# Where to install MVSUTILS/MVSCMD and other needed tools/scripts
+uss_utilities_path: /u/{{ TARGET_USERNAME }}
+
+# Where generated JCL files should be saved on target
+uss_file_path: /u/{{ TARGET_USERNAME }}
+
+# Enable to reserve ports for ICON at runtime, will overwrite the PORTID values provided below
+# This feature is experimental
+dynamic_port_reservation: no
+
+# Port information to be used for IMS Connect
+DFS_PORTID: 9978
+DFS_SSLPORTID: 9979
+DFS_REGION_TCPIPPORT: 9977
+DFS_REGION_SSLTCPIPPORT: 9966
+# location of system tcpip profile
+TCPIP_PROFILE: USER.PARMLIB(TCPIP)
+# location to store our altered tcpip profile
+TCPIP_PROFILE_TMP: '{{ DFS_AUTH_LIB_HLQ1 }}.TEMP(imsprof)'
+
+DFS_IMS_USERID: '{{ TARGET_USERNAME | upper }}'
+
+# IMS instance name to use, ensure it is unique
+DFS_IMS_SSID: IMS1
+
+DFS_AUTH_LIB_HLQ1: IMSBANK        
+DFS_AUTH_LIB_HLQ2: '{{ DFS_IMS_SSID }}' 
+
+DFS_AUTH_LIB_SYSHLQ1: DFS   
+DFS_AUTH_LIB_SYSHLQ2: V15R1M0
+
+DFS_JOBLIB: '{{ DFS_AUTH_LIB_HLQ1 }}.{{ DFS_AUTH_LIB_HLQ2 }}.JOBS'
+
+DFS_RESLIB: '{{ DFS_AUTH_LIB_HLQ1 }}.{{ DFS_AUTH_LIB_HLQ2 }}.SDFSRESL'
+
+DFS_PROCLIB: '{{ DFS_AUTH_LIB_HLQ1 }}.{{ DFS_AUTH_LIB_HLQ2 }}.PROCLIB'
+
+DFS_INIT_JAVA_CONF: yes
+JAVA_CONF_PATH: /u/dfsjvmpr.props
+DFS_workingdir: /u/{{ TARGET_USERNAME }}
+
+DFS_SMS_ENVIRONMENT: true
+DFS_SMS_CLASS: CLASS2
+DFS_SMS_MCLASS: NONE
+
+DFS_DS_VOLUME1: W68001
+DFS_DS_VOLUME2: W68002
+
+DFS_IMSPlex: PLEX2
+
+zCloud_LERuntime: CEE.SCEERUN
+
+zCloud_MACLIB: SYS1.MACLIB
+
+zCloud_CSSLIB: SYS1.CSSLIB

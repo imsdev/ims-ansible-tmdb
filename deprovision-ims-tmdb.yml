@@ -1,0 +1,29 @@
+- name: Deprovision IMS TMDB
+  hosts: zsystem
+  gather_facts: false
+  vars_files:
+    - "{{ vars_folder_name }}/ims-dbdc.yml"
+  environment: '{{ system_environment }}'
+
+  tasks:
+    - name: Create temporary directory to store provisioning files
+      tempfile:
+        state: directory
+      register: provision_tmp_dir
+
+    - block:
+
+        - include_role: 
+            name: install-bzip2
+
+        - include_role:
+            name: deprovision-ims-dbdc
+
+      always:
+        - name: Delete the temporary provision files directory
+          file:
+            path: "{{ provision_tmp_dir.path }}"
+            state: absent
+      vars:
+        uss_file_path: '{{ provision_tmp_dir.path }}'
+

@@ -1,0 +1,6 @@
+zsystem:
+  hosts:
+    zvm:
+      ansible_host: hostname.goes.here.com
+      ansible_user: usrt001
+      ansible_python_interpreter: /usr/lpp/rsusr/python27/python-2017-04-12-py27/python27/bin/python
