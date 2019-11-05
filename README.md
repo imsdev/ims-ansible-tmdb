@@ -14,7 +14,7 @@ This documentation will use **host** to refer to the system used to start Ansibl
 * Python 2.7-3.7 must be installed on the host (system starting Ansible). Python 3 or higher is recommended.
 * Ansible packages must be installed on the host (using *pip*, *aptitude*, *yum* or other package install methods, refer to the [install documentation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) for more information).
 * SSH must be enabled on the target z/OS system.
-* Optional: For development of Java applications accessing IMS databases or transactions, the IMS Universal JDBC drivers will be required. 
+* __Optional:__ For development of Java applications accessing IMS databases or transactions, the IMS Universal JDBC drivers will be required. 
     * Download from [Universal JDBC driver](https://www-01.ibm.com/marketing/iwm/iwm/web/reg/download.do?source=swg-imsUD&S_PKG=dlUD&lang=en_US&cp=UTF-8) or obtain via the IMS JAVA ON DEMAND FEATURES FMID JMK1406
 
 ## Initial setup
