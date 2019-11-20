@@ -10,10 +10,12 @@ This documentation will use **host** to refer to the system used to start Ansibl
 
 ## Requirements
 
-* Python 2.7.13 or higher must be installed on the target z/OS system.
+* Python 2.7.13 or higher must be installed on the target z/OS system. For information consult the "General Help" section. 
 * Python 2.7-3.7 must be installed on the host (system starting Ansible). Python 3 or higher is recommended.
+  * To install Python 3.6 on a z/OS system, please consult the [Install Python 3.6](#install-python-36) section.
 * Ansible packages must be installed on the host (using *pip*, *aptitude*, *yum* or other package install methods, refer to the [install documentation](https://docs.ansible.com/ansible/latest/installation_guide/intro_installation.html) for more information).
 * SSH must be enabled on the target z/OS system.
+* Z Open Automation Utilities must be installed. For more information consult the [install ZOAU](#install-zoau-z-open-automation-utilities) section.
 * __Optional:__ For development of Java applications accessing IMS databases or transactions, the IMS Universal JDBC drivers will be required. 
     * Download from [Universal JDBC driver](https://www-01.ibm.com/marketing/iwm/iwm/web/reg/download.do?source=swg-imsUD&S_PKG=dlUD&lang=en_US&cp=UTF-8) or obtain via the IMS JAVA ON DEMAND FEATURES FMID JMK1406
 
@@ -168,3 +170,19 @@ These can be set as environment variables or in `ansible.cfg`
 To convert from ASCII to EBCDIC, the following command can be used in z/OS USS
 
 `iconv -f ISO8859-1 -t IBM-1047 ASCII_file_name`
+
+### Install Python 3.6
+
+To install Python 3.6, you'll need to download it from Rocket Software. You'll need an account on Rocket Customer Portal (https://my.rocketsoftware.com). 
+1) Click Downloads button at top left of the screen
+3) Choose category z/OpenSource on left side panel
+4) Scroll to Python
+5) Download binaries and install files and the README.ZOS on an x86 machine. Transfer the tarball to your z/OS system and unpack it according the instructions in the stall files
+6) You'll also need to perform addition setup described in the README.ZOS. The README.ZOS file is just a text file.
+
+### Install ZOAU (Z Open Automation Utilities)
+For steps on how to install ZOAU manually, consult the following link:
+https://www.ibm.com/support/knowledgecenter/en/SSKFYE_1.0.0/install.html
+
+__NOTE:__ Python 3.6 is required
+
