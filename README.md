@@ -186,3 +186,6 @@ https://www.ibm.com/support/knowledgecenter/en/SSKFYE_1.0.0/install.html
 
 __NOTE:__ Python 3.6 is required
 
+The FMID for ZOAU is HAL5100. For the program directory and more information consult this link. 
+https://www.ibm.com/support/knowledgecenter/en/SSKFYE_1.0.0/program_directory_zoautil/hal5100.html
+
