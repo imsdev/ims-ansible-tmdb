@@ -173,20 +173,20 @@ To convert from ASCII to EBCDIC, the following command can be used in z/OS USS
 
 ### Install Python 3.6
 
-To install Python 3.6, you'll need to download it from Rocket Software. You'll need an account on Rocket Customer Portal (https://my.rocketsoftware.com). 
+To install Python 3.6, it will need to be downloaded from Rocket Software. An account on the Rocket Customer Portal (https://my.rocketsoftware.com) is required. 
 1) Click Downloads button at top left of the screen
 3) Choose category z/OpenSource on left side panel
 4) Scroll to Python
-5) Download the binaries, install files, and the README.ZOS on an x86 machine. Transfer the tarball to your z/OS system and unpack it according the instructions in the install files
+5) Download the binaries, install files, and the README.ZOS on an x86 machine. Transfer the tarball to the target z/OS system and unpack it according the instructions in the install files
 6) Additional setup will need to be performed as described in the README.ZOS. The README.ZOS file is only a text file.
 
 
 ### Install ZOAU (Z Open Automation Utilities)
-For steps on how to install ZOAU manually, consult the following link:
+For instructions on installing ZOAU manually, consult the following link:
 https://www.ibm.com/support/knowledgecenter/en/SSKFYE_1.0.0/install.html
 
 __NOTE:__ Python 3.6 is required
 
-The FMID for ZOAU is HAL5100. For the program directory and more information consult this link. 
+The FMID for ZOAU is HAL5100. For the program directory and more information, consult this link. 
 https://www.ibm.com/support/knowledgecenter/en/SSKFYE_1.0.0/program_directory_zoautil/hal5100.html
 
