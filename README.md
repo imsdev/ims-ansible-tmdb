@@ -173,7 +173,7 @@ To convert from ASCII to EBCDIC, the following command can be used in z/OS USS
 
 ### Install Python 3.6
 
-To install Python 3.6, it will need to be downloaded from Rocket Software. An account on the [Rocket Customer Portal](https://my.rocketsoftware.com) is required. 
+To install Python 3.6, it will need to be downloaded from [Rocket Software](https://www.rocketsoftware.com/zos-open-source). An account on the [Rocket Customer Portal](https://my.rocketsoftware.com) is required. 
 1) Click Downloads button at top left of the screen
 3) Choose category z/OpenSource on left side panel
 4) Scroll to Python
