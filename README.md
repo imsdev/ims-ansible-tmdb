@@ -177,8 +177,9 @@ To install Python 3.6, you'll need to download it from Rocket Software. You'll n
 1) Click Downloads button at top left of the screen
 3) Choose category z/OpenSource on left side panel
 4) Scroll to Python
-5) Download binaries and install files and the README.ZOS on an x86 machine. Transfer the tarball to your z/OS system and unpack it according the instructions in the stall files
-6) You'll also need to perform addition setup described in the README.ZOS. The README.ZOS file is just a text file.
+5) Download the binaries, install files, and the README.ZOS on an x86 machine. Transfer the tarball to your z/OS system and unpack it according the instructions in the install files
+6) Additional setup will need to be performed as described in the README.ZOS. The README.ZOS file is only a text file.
+
 
 ### Install ZOAU (Z Open Automation Utilities)
 For steps on how to install ZOAU manually, consult the following link:
